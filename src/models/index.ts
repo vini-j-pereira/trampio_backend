@@ -6,12 +6,14 @@ import { ProviderProfile } from './ProviderProfile';
 import { CalendarEvent } from './CalendarEvent';
 import { Transaction } from './Transaction';
 import { ServiceRequest, ServiceRequestProfessional } from './ServiceRequest';
+import { PasswordResetToken } from './PasswordResetToken';
 import {
     Conversation,
     ConversationParticipant,
     Message,
     Notification,
 } from './ChatAndNotification';
+
 import {
     CondoTransaction,
     CondoMeeting,
@@ -90,6 +92,10 @@ Message.belongsTo(User, { foreignKey: 'sender_id', as: 'sender' });
 User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications', onDelete: 'CASCADE' });
 Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// User → PasswordResetTokens (1:N)
+User.hasMany(PasswordResetToken, { foreignKey: 'user_id', as: 'resetTokens', onDelete: 'CASCADE' });
+PasswordResetToken.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 export {
     User,
     ClientProfile,
@@ -99,6 +105,7 @@ export {
     Transaction,
     ServiceRequest,
     ServiceRequestProfessional,
+    PasswordResetToken,
     Conversation,
     ConversationParticipant,
     Message,
