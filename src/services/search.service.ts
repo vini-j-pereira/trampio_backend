@@ -59,11 +59,22 @@ export async function searchProvidersService(params: {
         attributes: [
             'id', 'user_id', 'name', 'area', 'bio',
             'avatar_url', 'city', 'state', 'rating',
-            'rating_count', 'experience_yrs', 'availability', 'radius_km',
+            'rating_count', 'experience_yrs', 'availability', 'radius_km', 'company_name',
         ],
         order: [['rating', 'DESC']],
         limit: 50,
     });
-
     return rows.map((r) => r.toJSON() as ProviderSearchResult);
+}
+
+export async function getProviderById(id: string): Promise<ProviderSearchResult | null> {
+    const provider = await ProviderProfile.findByPk(id, {
+        attributes: [
+            'id', 'user_id', 'name', 'area', 'bio',
+            'avatar_url', 'city', 'state', 'rating',
+            'rating_count', 'experience_yrs', 'availability', 'radius_km', 'company_name',
+        ],
+    });
+
+    return provider ? (provider.toJSON() as ProviderSearchResult) : null;
 }

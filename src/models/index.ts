@@ -7,6 +7,8 @@ import { CalendarEvent } from './CalendarEvent';
 import { Transaction } from './Transaction';
 import { ServiceRequest, ServiceRequestProfessional } from './ServiceRequest';
 import { PasswordResetToken } from './PasswordResetToken';
+import { ProviderPhoto } from './ProviderPhoto';
+
 import {
     Conversation,
     ConversationParticipant,
@@ -43,6 +45,10 @@ CalendarEvent.belongsTo(ProviderProfile, { foreignKey: 'provider_id', as: 'provi
 // ProviderProfile → Transactions (1:N)
 ProviderProfile.hasMany(Transaction, { foreignKey: 'provider_id', as: 'transactions', onDelete: 'CASCADE' });
 Transaction.belongsTo(ProviderProfile, { foreignKey: 'provider_id', as: 'provider' });
+
+// ProviderProfile → ProviderPhotos (1:N)
+ProviderProfile.hasMany(ProviderPhoto, { foreignKey: 'provider_id', as: 'portfolio', onDelete: 'CASCADE' });
+ProviderPhoto.belongsTo(ProviderProfile, { foreignKey: 'provider_id', as: 'provider' });
 
 // CalendarEvent → Transactions (1:N)
 CalendarEvent.hasMany(Transaction, { foreignKey: 'calendar_event_id', as: 'transactions' });
@@ -115,4 +121,5 @@ export {
     CondoDocument,
     CondoAnnouncement,
     CondoVoting,
+    ProviderPhoto,
 };

@@ -9,20 +9,24 @@ interface ProviderProfileAttributes {
     user_id: string;
     name: string;
     document_type: DocumentType;
-    document?: string;
-    company_name?: string;
-    bio?: string;
+    document?: string | null;
+    company_name?: string | null;
+    bio?: string | null;
     area: string;
     radius_km: number;
     experience_yrs: number;
-    avatar_url?: string;
-    city?: string;
-    state?: string;
+    avatar_url?: string | null;
+    city?: string | null;
+    state?: string | null;
     availability: Availability;
     rating: number;
     rating_count: number;
-    week_goal?: number;
-    month_goal?: number;
+    week_goal?: number | null;
+    month_goal?: number | null;
+    phone?: string | null;
+    neighborhood?: string | null;
+    categories?: string[] | null;
+    services?: string | null;
     created_at?: Date;
     updated_at?: Date;
 }
@@ -54,6 +58,10 @@ export class ProviderProfile
     declare rating_count: number;
     declare week_goal: number | undefined;
     declare month_goal: number | undefined;
+    declare phone: string | undefined;
+    declare neighborhood: string | undefined;
+    declare categories: string[] | undefined;
+    declare services: string | undefined;
     declare readonly created_at: Date;
     declare readonly updated_at: Date;
 }
@@ -134,6 +142,23 @@ ProviderProfile.init(
         },
         month_goal: {
             type: DataTypes.DECIMAL(12, 2),
+            allowNull: true,
+        },
+        phone: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+        },
+        neighborhood: {
+            type: DataTypes.STRING(100),
+            allowNull: true,
+        },
+        categories: {
+            type: DataTypes.JSON,
+            allowNull: true,
+            defaultValue: [],
+        },
+        services: {
+            type: DataTypes.TEXT,
             allowNull: true,
         },
     },

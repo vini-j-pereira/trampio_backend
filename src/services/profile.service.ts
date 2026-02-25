@@ -4,6 +4,7 @@ import { User } from '../models/User';
 import { ClientProfile } from '../models/ClientProfile';
 import { CondoProfile } from '../models/CondoProfile';
 import { ProviderProfile } from '../models/ProviderProfile';
+import { ProviderPhoto } from '../models/ProviderPhoto';
 
 // ─── Update schemas ───────────────────────────────────────
 
@@ -25,17 +26,21 @@ export const updateClientSchema = z.object({
 
 export const updateProviderSchema = z.object({
     name: z.string().min(2).optional(),
-    bio: z.string().optional(),
+    bio: z.string().nullish(),
     area: z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    avatar_url: z.string().url().optional().or(z.literal('')),
-    company_name: z.string().optional(),
-    radius_km: z.number().positive().optional(),
-    experience_yrs: z.number().min(0).optional(),
+    city: z.string().nullish(),
+    state: z.string().nullish(),
+    avatar_url: z.string().nullish().or(z.literal('')),
+    company_name: z.string().nullish(),
+    radius_km: z.coerce.number().positive().optional(),
+    experience_yrs: z.coerce.number().min(0).optional(),
     availability: z.enum(['AVAILABLE', 'BUSY', 'VACATION']).optional(),
-    week_goal: z.number().positive().optional(),
-    month_goal: z.number().positive().optional(),
+    week_goal: z.coerce.number().min(0).optional(),
+    month_goal: z.coerce.number().min(0).optional(),
+    phone: z.string().nullish(),
+    neighborhood: z.string().nullish(),
+    categories: z.array(z.string()).nullish(),
+    services: z.string().nullish(),
 });
 
 export const updateCondoSchema = z.object({
@@ -55,7 +60,11 @@ export async function getProfileService(userId: string) {
         include: [
             { model: ClientProfile, as: 'clientProfile' },
             { model: CondoProfile, as: 'condoProfile' },
-            { model: ProviderProfile, as: 'providerProfile' },
+            {
+                model: ProviderProfile,
+                as: 'providerProfile',
+                include: [{ model: ProviderPhoto, as: 'portfolio' }]
+            },
         ],
     });
     if (!user) throw Object.assign(new Error('Usuário não encontrado.'), { status: 404 });
@@ -90,8 +99,34 @@ export async function updateProfileService(
         const profile = await ProviderProfile.findOne({ where: { user_id: userId } });
         if (!profile) throw Object.assign(new Error('Perfil não encontrado.'), { status: 404 });
         await profile.update(data);
+        await profile.reload();
         return profile;
     }
 
     throw Object.assign(new Error('Role inválido.'), { status: 400 });
+}
+
+// ─── Portfolio Management ─────────────────────────────────
+
+export async function addPortfolioPhotoService(userId: string, url: string, description?: string) {
+    const provider = await ProviderProfile.findOne({ where: { user_id: userId } });
+    if (!provider) throw Object.assign(new Error('Perfil de prestador não encontrado.'), { status: 404 });
+
+    return await ProviderPhoto.create({
+        provider_id: provider.id,
+        url,
+        description,
+    });
+}
+
+export async function removePortfolioPhotoService(userId: string, photoId: string) {
+    const provider = await ProviderProfile.findOne({ where: { user_id: userId } });
+    if (!provider) throw Object.assign(new Error('Perfil de prestador não encontrado.'), { status: 404 });
+
+    const photo = await ProviderPhoto.findOne({
+        where: { id: photoId, provider_id: provider.id }
+    });
+    if (!photo) throw Object.assign(new Error('Foto não encontrada.'), { status: 404 });
+
+    await photo.destroy();
 }

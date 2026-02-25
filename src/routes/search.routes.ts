@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Op } from 'sequelize';
-import { searchProvidersService } from '../services/search.service';
+import { searchProvidersService, getProviderById } from '../services/search.service';
 import { ServiceRequest, ServiceRequestProfessional } from '../models/ServiceRequest';
 import { ClientProfile } from '../models/ClientProfile';
 
@@ -16,6 +16,24 @@ router.get('/providers', async (req: Request, res: Response) => {
         const { q, area, city, state, availability } = req.query as Record<string, string>;
         const results = await searchProvidersService({ q, area, city, state, availability });
         res.json(results);
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro interno.';
+        res.status(500).json({ error: msg });
+    }
+});
+
+/**
+ * GET /api/search/providers/:id
+ * Public endpoint — fetch single provider public profile.
+ */
+router.get('/providers/:id', async (req: Request, res: Response) => {
+    try {
+        const result = await getProviderById(req.params.id);
+        if (!result) {
+            res.status(404).json({ error: 'Prestador não encontrado.' });
+            return;
+        }
+        res.json(result);
     } catch (err) {
         const msg = err instanceof Error ? err.message : 'Erro interno.';
         res.status(500).json({ error: msg });
